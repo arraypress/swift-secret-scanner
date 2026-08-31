@@ -305,4 +305,16 @@ final class GroundTruthTests: XCTestCase {
         XCTAssertEqual(hits, planted.count, "recall \(recall): \(wrongKind) found as the wrong kind")
         XCTAssertEqual(falseAlarms, 0, "precision \(precision)")
     }
+
+    /// The code-shape gate, pinned rule by rule: calls, dotted paths,
+    /// selector colons and bare digit-free words are code; a URL's colon
+    /// and a digit-bearing token are not.
+    func testLooksLikeCodeRules() {
+        XCTAssertTrue(Placeholders.looksLikeCode("SecurePrompt.read(label)"))
+        XCTAssertTrue(Placeholders.looksLikeCode("config.apiKey"))
+        XCTAssertTrue(Placeholders.looksLikeCode("token:endpoint:"))
+        XCTAssertTrue(Placeholders.looksLikeCode("READ_FROM_KEYCHAIN"))
+        XCTAssertFalse(Placeholders.looksLikeCode("https://example.com/a"))
+        XCTAssertFalse(Placeholders.looksLikeCode("ghp_9a8B7c6D5e4F3g2H1i0J"))
+    }
 }
