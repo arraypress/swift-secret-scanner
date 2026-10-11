@@ -49,6 +49,7 @@ public struct SecretScanner: Sendable {
                 guard range.location != NSNotFound else { continue }
                 let secret = ns.substring(with: range)
                 if let verify = pattern.verify, !verify(secret) { continue }
+                if Placeholders.isDocumentedExample(secret) { continue }
                 // One secret, one finding: a Stripe key is not also a
                 // generic assignment value.
                 if taken.contains(where: { NSIntersectionRange($0, range).length > 0 }) { continue }

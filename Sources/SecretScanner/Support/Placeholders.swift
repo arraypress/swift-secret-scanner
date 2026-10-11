@@ -15,7 +15,7 @@ public enum Placeholders {
     static let markers = [
         "xxx", "example", "changeme", "change_me", "change-me", "your_", "your-", "yourkey", "<", ">",
         "${", "$(", "{{", "process.env", "os.environ", "getenv", "placeholder", "dummy", "sample",
-        "redacted", "****", "...", "todo", "fixme", "replace", "insert", "enter_", "path/to", "/dev/null",
+        "redacted", "****", "...", "…", "todo", "fixme", "replace", "insert", "enter_", "path/to", "/dev/null",
         // A value that names itself is an example: REPLYTOKEN1, mysecret, fakepassword.
         "secret", "token", "passw", "apikey", "api-key", "api_key", "not-a-", "notreal", "fake", "invalid",
     ]
@@ -43,6 +43,14 @@ public enum Placeholders {
         if value.range(of: #"^[A-Za-z_][A-Za-z0-9_-]*$"#, options: .regularExpression) != nil,
            !value.contains(where: \.isNumber), value.count < 32 { return true }
         return false
+    }
+
+    /// `true` for a vendor's published example, which says so in capitals:
+    /// AWS documents an access key ID ending `EXAMPLE` and a secret ending `EXAMPLEKEY`.
+    /// Checked for every pattern, not only the generic ones — a provider
+    /// pattern matches these exactly, and a random key never spells it.
+    public static func isDocumentedExample(_ value: String) -> Bool {
+        value.contains("EXAMPLE")
     }
 
     /// `true` when the value is a stand-in rather than a credential.

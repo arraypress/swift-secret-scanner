@@ -318,3 +318,30 @@ final class GroundTruthTests: XCTestCase {
         XCTAssertFalse(Placeholders.looksLikeCode("ghp_9a8B7c6D5e4F3g2H1i0J"))
     }
 }
+
+/// Three false alarms from the 2026-10-11 fleet sweep, each pinned both
+/// ways: the stand-in goes quiet, a real-shaped secret is still found.
+final class SweepFalseAlarmTests: XCTestCase {
+
+    func testAnEllipsisIsAPlaceholder() {
+        let key = "secret" + "="
+        XCTAssertEqual(SecretScanner().scan("let uri = \"otpauth://totp/a?\(key)…&issuer=ACME\"").count, 0)
+        XCTAssertEqual(SecretScanner().scan("let apiKey = \"" + Fake.alnum(32) + "\"").count, 1,
+                       "a real-shaped value is still a finding")
+    }
+
+    func testURLCredentialsDoNotRunAcrossJSON() {
+        let json = #"{"repository":{"url":"git+https://github.com/x/left-pad.git"},"_npmOperationalInternal":{"host":"s3://npm-registry-packages"},"_id":"left-pad@1.3.0"}"#
+        XCTAssertEqual(SecretScanner().scan(json).filter { $0.pattern == "url-basic-auth" }.count, 0)
+        let password = Fake.alnum(14, seed: 9)
+        let url = "https://" + "deploy:" + password + "@example.org/repo.git"
+        let found = SecretScanner().scan("remote = \(url)").filter { $0.pattern == "url-basic-auth" }
+        XCTAssertEqual(found.count, 1, "a real user:password@host is still caught")
+    }
+
+    func testAWSDocumentedExamplesAreNotFindings() {
+        let example = "AKIA" + "IOSFODNN7" + "EXAMPLE"
+        XCTAssertEqual(SecretScanner().scan("aws key \(example) ok").count, 0)
+        XCTAssertEqual(SecretScanner().scan("aws key AKIA\(Fake.upper(16, seed: 11)) ok").count, 1)
+    }
+}

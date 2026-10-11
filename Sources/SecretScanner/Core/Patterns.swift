@@ -116,7 +116,10 @@ public enum Patterns {
         SecretPattern("jwt", "JSON Web Token", .medium,
                       #"\b(eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,})\b"#),
         SecretPattern("url-basic-auth", "Credentials in a URL", .high,
-                      #"(?i)\b[a-z][a-z0-9+.-]*://([^\s:/@]+:[^\s@/]{4,})@[^\s/]+"#,
+                      // Quotes, brackets, braces and commas cannot appear unescaped in
+                      // a URL's user info; allowing them let a match run across JSON
+                      // (a recorded npm response) from one string into the next.
+                      #"(?i)\b[a-z][a-z0-9+.-]*://([^\s:/@"'<>{}\[\],]+:[^\s@/"'<>{}\[\],]{4,})@[^\s/"']+"#,
                       verify: { !Placeholders.matches($0.split(separator: ":").last.map(String.init) ?? "") }),
         SecretPattern("app-specific-password", "Apple app-specific password", .medium,
                       #"(?i)(?:password|pass|pwd)[^\n]{0,20}?([a-z]{4}-[a-z]{4}-[a-z]{4}-[a-z]{4})\b"#),

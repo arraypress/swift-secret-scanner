@@ -33,6 +33,13 @@ let history = try Scan.history(repo, scanner: scanner)   // attributes each secr
 
 Every pattern has a positive fixture assembled from fragments at test time (no literal token in the repository), and twenty decoys — hashes, UUIDs, versions, placeholders, references to environment variables, a base64 image, look-alikes that are too short. On that corpus: **recall 41/41, precision 41/41**. The generic rules are the ones that will cry wolf on real code; that is what the allowlist is for.
 
+**Fleet sweep, 2026-10-11** — 300 repositories scanned in a release gate. Three false-alarm
+shapes fixed in 0.2.1 (0.2.0 was tagged by mistake on the 0.1.1 code), each pinned both ways (the stand-in goes quiet, a real-shaped secret is
+still found): a written-out `secret=…` placeholder; credentials-in-a-URL matching across JSON
+quotes in a recorded API response; AWS's published `…EXAMPLE` keys. What remains is genuine test
+vectors (RFC TOTP secrets, fake Stripe/Slack keys in a detector's own tests) — those belong in a
+`.secretsignore`.
+
 ## Requirements
 
 - macOS 14+, Swift 6, `git` on the path for the repository walkers.
